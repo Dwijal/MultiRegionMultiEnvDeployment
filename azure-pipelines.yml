@@ -21,10 +21,10 @@ parameters:
     - prod
   - name:  region
     type: string
-    default: 'Central India'
+    default: 'centralindia'
     values:
-    - 'Central India'
-    - 'South India'
+    - 'centralindia'
+    - 'southindia'
 
 
 
@@ -50,7 +50,7 @@ stages:
           backendServiceArm: 'Azure subscription 1(96083625-5f7c-4a53-abcb-1ea4d9113690)'
           backendAzureRmResourceGroupName: '$(resourceGroupName)'
           backendAzureRmStorageAccountName: '$(storageAccountName)'
-          backendAzureRmContainerName: 'stateFileContainer'
+          backendAzureRmContainerName: 'statefilecontainer'
           backendAzureRmKey: 'terraform.tfstate'
     - job: "Terraform_Plan_Job"
       dependsOn: Terraform_Init_Job
