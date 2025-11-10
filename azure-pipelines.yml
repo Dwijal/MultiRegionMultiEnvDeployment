@@ -9,7 +9,7 @@ trigger:
 pool:
   name: 'dwipool'
   demands:
-    - agent.name -equals dwiagent
+    - agent.name -equals adovm
 
 steps:
 - script: echo Hello, world!
