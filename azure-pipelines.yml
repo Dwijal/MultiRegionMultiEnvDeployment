@@ -1,21 +1,73 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/microsoft/azure-pipelines-vscode/master/service-schema.json
 
 trigger:
-- main
+  branches:
+    include:
+    - main
 
 pool:
   name: 'dwipool'
   demands:
-    - agent.name -equals adovm
+  - agent.name -equals adovm
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+
+parameters:
+  - name: environment
+    type: string
+    default: 'dev'
+    values:
+    - dev
+    - prod
+  - name:  region
+    type: string
+    default: 'Central India'
+    values:
+    - 'Central India'
+    - 'South India'
+
+
+
+variables:
+- group: InfraDetails
+- template: templates/selection.yaml
+  parameters:
+    environment: ${{ parameters.environment }}
+    region: ${{ parameters.region }}
+
+stages:
+  - stage: 
+    displayName: "Terraform Init Stage"
+    jobs:
+    - job: "Terraform_Init_Job"
+      displayName: "Terraform Init Job"
+      steps:
+      - task: TerraformTask@5
+        inputs:
+          provider: 'azurerm'
+          command: 'init'
+          commandOptions: '-reconfigure'
+          backendServiceArm: 'Azure subscription 1(96083625-5f7c-4a53-abcb-1ea4d9113690)'
+          backendAzureRmResourceGroupName: '$(resourceGroupName)'
+          backendAzureRmStorageAccountName: '$(storageAccountName)'
+          backendAzureRmContainerName: 'stateFileContainer'
+          backendAzureRmKey: 'terraform.tfstate'
+    - job: "Terraform_Plan_Job"
+      dependsOn: Terraform_Init_Job
+      steps:
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'plan'
+            workingDirectory: '$(workingDirectory)'
+            commandOptions: '-out=plan $(tfTarget)
+          -var "environment=${{ parameters.environment }}"
+          -var "region=${{ parameters.region }}"
+          -var "shared_subscription_id=$(Shared-SubscriptionId)"
+          -var "shared_tenant_id=$(Shared-TenantId)"
+          -var "shared_client_id=$(Shared-ClientId)"
+          -var "shared_client_secret=$(Shared-ClientSecret)"'
+            environmentServiceNameAzureRM: 'Azure subscription 1(96083625-5f7c-4a53-abcb-1ea4d9113690)'
+
+
+       
